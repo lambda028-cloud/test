@@ -1,0 +1,147 @@
+AirTest 学习
+
+
+
+1）返回应用的完整路径：path_app()
+
+android = Android()
+android.path_app("com.netease.cloudmusic")
+2）检查应用是否存在于当前设备上：check_app()
+
+android = Android()
+android.check_app("com.netease.cloudmusic")
+3）停止应用运行：stop_app()
+
+stop_app("com.netease.cloudmusic")
+
+# 启动应用:start_app()
+start_app("com.netease.cloudmusic")
+
+# 清除应用数据：clear_app()
+clear_app("com.netease.cloudmusic")
+4）安装应用：install_app()
+
+install(r"D:\demo\tutorial-blackjack-release-signed.apk")
+
+# 卸载应用：uninstall_app()
+uninstall("org.cocos2dx.javascript")
+5）关键词操作：keyevent()
+
+keyevent("HOME")
+keyevent("POWER")
+6）唤醒设备：wake()
+
+wake()
+7）返回HOME：home()
+
+home()
+8）文本输入：text()
+
+text("123")
+9）检查屏幕是否打开：is_screenon()
+
+android = Android()
+android.is_screenon()
+10）检查设备是否锁定：is_locked()
+
+android = Android()
+android.is_locked()
+11）获取当前设备的分辨率：get_current_resolution()
+
+android = Android()
+android.get_current_resolution()
+12）其它adb shell命令：shell()
+
+shell("ls")
+shell("pm list packages -3")
+
+
+
+
+
+底层库解析：
+
+Aircv
+	aircv： cv2的基本图形处理：读写、展示、裁剪、旋转
+	cal_confidence: 计算两图片的匹配度
+	error: 定义了常用的异常类
+	keypoint_base： 基于特征点的识别基类 KAZE
+	keypoint_matching： 定义了3种检测方法的初始化类，没看出有什么用
+	keypoint_matching_contrib: 特征点检测的匹配
+	multiscale_template_matching： 多尺度模版匹配，获取目标坐标位置
+	screen_recorder: 使用ffmpeg进行视频录制
+	sift: 基于SIFT的图像匹配，可无视平面旋转
+	template：基于模版匹配，在原图中找目标图，并标注
+	template_matching: 基于模版匹配，在原图中找目标图，并标注
+	utils: 图像处理和一些函数装饰器
+
+cli
+	info: 没什么用，脚本文件属性获取
+	parser: 命令行参数提示及解析
+	runner: 继承unittest，执行脚本用例
+
+Core
+	android
+		cap_methods
+			adbcap： 继承base_cap，通过adb官方接口进行截图
+			base_cap： 基类，定义了截屏，截屏灰阶功能
+			javacap： 继承base_cap，由yosemite应用提供socket服务，供获取截图
+			minicap: 继承base_cap,STF中的高速截图工具，可不断传输图片并在web端绘制.相当于启动了一个socket服务端
+			screen_proxy: 注册可用的截屏方法
+		static
+			adb： Mac,linux,windows 的adb命令启动方式
+			apks：存放maxpresent,rotationwatcher,Yosemite安装包
+			stf_libs：各平台stf库文件
+		touch_methods
+			base_touch： 基类，封装了移动端点击、滑动、放大缩小、拖动操作
+			max touch: 实现base_touch
+			minitouch： 另一种方案的实现了base_touch
+			touch_proxy: 自动选择maxtouch和mintouch方式
+		adb: 封装了adb的所有移动端操作命令
+		android： 基于adb已有的方法进行简单封装
+		constant: 静态变量，记录了一些安装文件、服务安装包、adb路径等
+		ime： 不懂
+		recorder： 基于Yosemite的录屏及推送录屏文件，主要用到了Yosemite类的Yosemite应用的安装预检查
+		rotation: 旋转服务，尚不知具体作用
+		Yosemite：Yosemite.apk的安装卸载
+	iOS: 同安卓
+	linux： linux下的应用处理
+	win： windows下应用处理
+	api： 对应客户端的部分操作： 初始化设备操作类、连接设备、移动端的基本操作(输入文本，点击双击缩放，等待元素，安装卸载启动)
+	assertions： 断言功能
+	cv:  封装后的图片搜索类、截屏操作、 算出测试设备点击操作对应的坐标和区域
+	device: 未实现，没卵用
+	error： 异常类
+	helper: 移动端设备导入类判定，及其他设备相关的配置
+	settings: 全局的一些设定，如识别图片的方案，log文件名称，是否保存图片，识别匹配度
+		
+
+
+Report： 日志输出相关
+
+Utils:
+	apkparser
+		apk    查看指定包的各个属性值，包括activity
+		axmlparser: axml数据解析
+		axmlprinter  axml数据解析
+		bytecode   将数据转换为标准的数据流以进行网络传输，让其他语言也能使用
+		string block: 数据解析
+		type constants   定义了一些常量
+
+	ffmpeg
+		ffmpeg_setter 自动下载、安装、配置环境变量 ffmpeg环境
+
+	combat：python版本兼容相关，包括线程的执行
+	logger： 日志设置相关
+	logwraper： 日志装饰器
+	nbsp： 流处理,读取数据
+	resolution: 存放一些计算函数，比如图像适配、搜索区域预测
+	retry: 定义失败重试的装饰器
+	safe socket： socket客户端消息收发
+	selenium_proxy： 封装了selenium，添加了部分打印和延迟等待
+	snippet: 杂七杂八的一些小功能
+	threadsafe： 安全的线程处理
+	transform： 图片点击时的坐标位置解析判定
+	version: 已安装airiest版本获取
+
+

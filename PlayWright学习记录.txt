@@ -1,0 +1,115 @@
+PlayWright学习记录
+
+
+
+------  css 定位 -------
+#id
+.class
+[attr='value']   属性
+[attr] 有attr属性的所有元素
+input[attr='value'] 属性
+element1 > element2 层级
+element1 element2 隔代层级
+element1+element2 相邻兄弟
+h2~p  h2元素后的所有p元素
+#id.class 组合
+伪类选择器：
+	li:first-child 定位第一个li元素
+	li:last-child 最后一个
+	li:nth-child(3) 第3个
+	a:hover 鼠标悬停的元素
+	p::first-letter 第一个字符
+	p::first-line 第一行
+	button:text("提交") 文本
+属性值匹配:
+	a[href^="https"]  以https开头的a元素
+	a[href$=".pdf""]
+	[class*="content"] class属性包含content的元素
+	text='adsadas'
+	
+
+--- playwright 选择器	
+playwright: page.locator(".login-button").nth(1).click() 第二个匹配到的元素
+playwright.$('.auth-form >> text=Log in')
+playwright.$('.aa >> text=bb')  pw自己的选择器语法，相当于分步查询，先得到元素1，在它下面再查元素2
+playwright.$$('li>>text=aa') 区别于$只返回匹配到的第一个元素，$$返回所有匹配到的元素
+playwright.locator() 创建定位器
+
+
+
+
+
+
+
+
+
+命令行启动脚本录制: playwright codeine -o outputPythonFileName
+
+
+
+可启动监听器，持续保存视频、截图和源码
+Context.tracing.start()
+Context.tracing.stop()
+查看保存的监听数据: playwright show-trace trace.zip
+
+若需要硬等待，应使用: page.wait_for_timeout(5000)，而不是time.sleep()
+
+
+
+
+
+
+源码学习：
+
+_impl
+	__pyinstaller
+		hook-playwright.async_api
+async_api
+Driver
+sync_api
+__init__.py
+__main__.py
+
+
+
+
+------------- fixture --------------
+playwright - Playwright 实例
+browser - 浏览器实例
+browser_name - 当前浏览器名称
+browser_channel - 浏览器渠道
+context - 浏览器上下文
+page - 页面实例
+
+
+
+--------- 使用 --------------
+page.pause()   在这里暂停，进入调试模式
+page.type() 模拟键盘输入，逐个字符触发键盘事件
+page.evaluate()     执行javascript
+page.content()   获取页面完整的html
+page.setcontent()
+page.wait_for_selector()
+wait_for_event(event)
+wait_for_timeout(ms) 强制等待
+page.on('dialog', lambda dialog: dialog.accept()) 监听对话框事件
+page.iframe()
+
+
+-- 浏览器上下文 --
+context = page.context
+cookies = context.cookies()
+
+
+
+
+
+-------- 脚本录制 -----------
+# 交互式录制和调试
+playwright codegen https://example.com
+
+# 录制并生成测试文件
+playwright codegen --target python -o debug_test.py https://example.com
+
+
+

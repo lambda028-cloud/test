@@ -1,0 +1,75 @@
+Pytest:
+
+----  测试集  ------
+当前目录和子目录中的所有格式喂 test_开头或 _test结尾的文件都是测试文件
+测试类需以 Test_开头
+测试函数名称需以 test_开头
+
+
+
+------ 测试执行 ------
+
+运行所有测试：pytest
+运行特定文件：pytest test_sample.py
+运行特定测试：pytest test_sample.py::test_answer
+运行类中特定func: pytest file::class::func
+运行模糊匹配： pytest xxxx  -k xxx
+
+# 运行单个标记的测试
+pytest -m smoke
+
+# 运行多个标记的测试（或关系）
+pytest -m "smoke or regression"
+
+# 运行多个标记的测试（与关系）
+pytest -m "smoke and critical"
+
+# 运行非某个标记的测试
+pytest -m "not slow"
+
+
+@pytest.mark.timeout(60)
+@pytest.mark.skip(reason='aaaaaa') # 跳过测试
+@pytest.mark.skipif(sys.version<1, reason='bbbb')  # 条件跳过
+@pytest.mark.timeout(60)
+@pytest.mark.xfail 忽略结果统计
+@pytest.mark.skip 不执行此脚本
+
+
+
+# 给方法传递参数，多组参数
+@pytest.mark.parametrize("arg1,arg2", [('a', 'b'),('a1', 'b1')])
+def test_func(arg1, arg2)
+
+# 传参时，给每组参数指定不同的mark
+@pytest.mark.parametrize("arg1,arg2", [('a', 'b', 'pass'),('a1', 'b1', 'base')])
+def test_func(arg1, arg2)
+
+# 指定每组参数的用例名称
+@pytest.mark.parametrize("arg1,arg2", [('a', 'b', 'pass'),('a1', 'b1', 'base')], ['case1','case2']])
+def test_func(arg1, arg2)
+
+# 参数组合
+@pytest.mark.parametrize("arg1", ['a', 'a1'])
+@pytest.mark.parametrize("arg2", [('b', 'b1')])
+def test_func(arg1, arg2)
+
+# 从参数文件读取
+@pytest.mark.parametrize("arg1", f)
+
+
+
+===== 关于fixture  ======
+
+conftest.py 是 pytest 框架中的一个特殊文件，它主要有以下特点：
+
+用于存放 pytest 的 fixture 函数
+这些 fixture 可以被同一目录及其子目录中的所有测试文件共享使用
+不需要显式导入，pytest 会自动发现这些 fixture
+在项目的测试目录中创建一个名为 conftest.py 的文件
+在这个文件中定义你的 fixture 函数
+
+
+----  生成 allure报告 -----
+
+allure serve ../Logs

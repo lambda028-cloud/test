@@ -1,0 +1,201 @@
+首字母大写的名称均为public，小写为protected，包外不可见，包内可见
+
+
+var和 :=
+	函数外必须用var
+	可以：  var a,b int = 1, 2
+	
+	数组类：
+		申明： var arr [5]int
+		声明并初始化 arr := [5]int{1, 2, 3, 4, 5}
+		二维数组 var matrix [3][3]int
+		申明数组的长度由初始化的个数来计算： q:=[...]int{1,2,3}
+		用 []string{"a", "b"}生成的是slice，用 [...]string{"a", "b"}生成的是数组
+		初始化数组时，可以指定索引: [...]string{3:"aa", 4:"bb"}，这样012索引的值都是空
+		
+	
+
+1.关于 iota: 特殊常量,只要整体有iota,将从第一个变量开始由0开始计数，即使中间有设置值，计数不会变
+	
+	
+	1
+	110
+	1100
+	
+	
+2.关于for循环:
+	常规用法：for i:=0;i<10;i++ {}
+	
+	类while的实现
+	i :=0
+	for i<10 { i++ }
+	
+	无限循环
+	for {......}
+	
+	range循环
+		1) 遍历切片
+		nums := []int{10, 2,3}
+		for i, v := range nums { ...... }
+		
+		2) 遍历字符串
+		for i, v := range "dsadsqjehwj" {........}
+		for range "adsadassdada" {......}
+		
+		3) 遍历map
+		m := map[string]int{"a": 1, "b": 2}
+		for k, v := range m {........}
+	
+	忽略变量
+		1) 不需要index
+		for _, v := range nums {......}
+		2) 不需要value
+		for i := range nums {.......}
+	
+	
+	单独初始化多个变量
+	for i, j :=0, 10; i < j; i, j = i+1, j-1 {........}
+	
+	
+3.if: 在判定之前可以接受一个简单的初始化语句
+	if a:=1;a<10 {.....}
+	
+	
+	
+
+3.关于 range的用法
+
+
+
+4.关于map
+	map[string]int{"a": 1, "b": 2}        map[string]int表示key为string，value为int
+	若想先声明后使用，则需要make: var m map[string]int; m :=make(map[string]int)
+	key不存在访问时值为零值，要区分有key的零值与无key的零值，可: if v, ok : age[key];!ok {..............}
+
+5.panic: 类似于 exception 抛异常
+6.recover: 捕获panic,只能在panic中调用才生效,先执行panic触发异常，然后执行defer函数中的recover捕获异常
+7.defer: 由它定义的方法在执行时，不会立即调用，而是在最后才执行，哪怕有多个defer，也是按先进后出的规则。若涉及到变量，会按正常顺序记住当时的值。
+	
+8. os.Stdout
+9. os.Stdin
+10.go: go func() {...} 启动一个协程，非阻塞，并发数上限取决于GOMAXPROCS
+11.struct
+12.new(Type): 用于分配内存：创建一个指定类型的零值变量，并返回该变量的指针。注意，针对make支持的类型不会去初始化，可通过make初始化
+13.rune 本质是int32的别名，用来表示一个unicode字符.byte是一个字节，rune是4个字节。遍历字符串时使用rune更安全。s[0]返回的是字节，不是字符
+14.slice: 区别于python，这里是引用传递，slice类型包括指针、长度len和容量cap，故若改变slice的元素值，将改变原数据。若变化后的len小于原数据的cap，则改变原数据；若变化后的len超过cap大小，则不再指向原数据而是创建新的数据，cap翻倍。可通过内置的len和cap看到对应的值
+15.关于"...": 主要用作展开操作符，如 append(b, []rune("abcd")...)，可以理解为把abcd的rune数组展开成单字符。另外在函数声明中，表示变长的参数类似python的*args。如：func foo(x []int, y ...int) []int {...............}
+
+
+-------------------- 内置包 ----------------------
+bufio: 带缓冲带输入输出，方便处理行或块数据
+	bufio.Reader
+	bufio.Writer
+	bufio.Scanner 按行、单词等方式读取文本的扫描器
+
+
+
+fmt:
+	Printf()  格式化输出，%v 值 | %+v 结构体带字段名 | %#v 按go语法的格式显示 | %T类型 | %t布尔值 | %d 十进制整数 ｜ %U｜%c 字符 | %q 可见的、带引号的字面量形式
+	Println()  原样输出，末尾自动增加换行
+	Sprint() 拼接字符串
+	Sprintln() 拼接加换行
+	Sprintf() 按格式返回字符串
+	Fprint() 可将输出写入到实现了io.Writer接口的对象
+	Fprintln()
+	Fprintf()
+	Scan()
+
+
+io:
+
+
+strconv: 提供布尔型、整型数、浮点数和对应字符串的相互转换
+unicode: 提供IsUpper等字符分类判定
+string:  提供对字符进行转换
+path和path/filepath: 提供了关于文件路径的函数操作
+
+
+
+os:
+	os.Args 可获取命令行传的参数
+	os.Executable() 获取当前可执行文件路径
+	os.getwd() 获取当前工作目录
+	os.chdir(dir) 切换当前工作目录
+	os.Getenv(key) 获取指定key的环境变量的值
+	os.Setent(key, value) 设置环境变量
+	os.Environ() 返回所有环境变量
+	
+	-- 文件操作
+	os.Open(name)  只读
+	os.OpenFile(name, flag, perm) 按指定方式打开文件
+	os.Create(name) 创建文件，覆盖
+	os.Remove(name) 删除文件或空目录
+	os.Rename(old, new) 重命名或移动文件
+	os.ReadFile(name) 一次性读取
+	
+	流式读取, 按行读，不占内存: 
+		f, err := os.Open(path)
+		scanner := bufio.NewScanner(f)
+		for scanner.Scan() {
+			fmt.Println(scanner.Text())
+		}
+		
+	类似linux的cat，打印文件内容,快速、简洁:
+		f, err := os.Open(path)
+		io.Copy(os.stdout, f)
+		
+	读取固定大小的块:
+		f, err := os.Open(path)
+		buf := make([]byte, 1024)
+		for {
+			n, err := f.Read(buf)
+			fmt.Print(string(buf[:n]))
+		}
+		
+	
+	-- 文件读写
+	os.Open 得到的是 *os.File
+	file.Read(p []byte) 读
+	file.Write(p []byte) 写
+	file.Seek(offset, whence) 移动指针
+	
+	
+	-- 目录操作
+	os.Mkdir(name, perm) 创建目录
+	os.MkdirAll(path, perm) 递归创建
+	os.RemoveAll(path) 递归删除
+	
+copy:
+	深拷贝，只适用于slice类型，若要复制数组，可先分片。复制的长度为两者长度的较小值
+	
+strings:
+	Split: 返回切片
+	Map: Map(func, list) 类似python的map，将list元素分别传入，得到结果合集
+	
+sort: 排序
+	Strings 
+	
+json:
+	Marshal(a) 将slice转为json - 紧凑型
+	MarshalIndent(a, "每一行输出的前缀", " 每一个层级的缩进  ") - 有正常缩紧
+	
+log:
+	Fatalf(......) 打印报错信息
+	Printf
+	
+regexp
+	
+
+通用内置函数:
+	delete(a, b) 删除a的b元素，若元素不存在将返回b对应类型的零值
+	append(a, b) 将b追加到a，并返回b
+	make: 初始化复杂内建类型，只用于三种类型: slice,map,chan,返回值. make([]string, 0, len]),这里的0表示slice实际元素数量，值为该类型的零值，len为cap容量。如果cap未传值，则cap=len
+	new(Type): 用于分配内存：创建一个指定类型的零值变量，并返回该变量的指针。注意，只能做零值初始化，map|slice|chan的零值是nil，不能直接用,必须用make
+	
+	
+
+
+
+
+
+

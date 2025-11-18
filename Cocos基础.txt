@@ -1,0 +1,374 @@
+Cocos基础：
+
+
+引擎日志输出
+示例：
+import { log } from 'cc';
+log('Hello world!');
+
+
+
+
+1.激活、关闭节点：
+	this.node.active = false;
+使用节点的activeInHierarchy属性可判断是否已经激活
+
+
+2.更改父节点：
+	this.node.parent = parentNode;
+	或
+	this.node.removeFromParent(false);    removeFromParent 通常需要传入一个 false，否则默认会清空节点上绑定的事件和 action 等
+	parentNode.addChild(this.node);
+
+
+3.索引节点的子节点
+* this.node.children：返回节点的所有子节点数组。
+* this.node.children.length：返回节点的子节点数量。
+注意：以上两个 API 都只会返回节点的直接子节点，不会返回子节点的子节点。
+
+
+
+
+4.更改节点位置
+有以下两种方法：
+    1)使用 setPosition 方法：
+    * this.node.setPosition(100, 50, 100);
+    * this.node.setPosition(new Vec3(100, 50, 100));
+    2)设置 position 变量： 	this.node.position = new Vec3(100, 50, 100);
+
+5.节点缩放
+	this.node.setScale(2, 2, 2)
+
+6.常用组件接口
+Component 是所有组件的基类，任何组件都包括如下的常见接口（假设我们在该组件的脚本中，以 this 指代本组件）：
+* this.node：该组件所属的节点实例
+* this.enabled：是否每帧执行该组件的 update 方法，同时也用来控制渲染组件是否显示
+* update(deltaTime: number)：作为组件的成员方法，在组件的 enabled 属性为 true 时，其中的代码会每帧执行
+* onLoad()：组件所在节点进行初始化时（节点添加到节点树时）执行
+* start()：会在该组件第一次 update 之前执行，通常用于需要在所有组件的 onLoad 初始化完毕后执行的逻辑
+
+
+===========================. 装饰器. ========================
+cc类
+	将装饰器 ccclass 应用在类上时，此类称为 cc 类。cc 类注入了额外的信息以控制 Cocos Creator 对该类对象的序列化、编辑器对该类对象的展示等。因此，未声明 ccclass 的组件类，也无法作为组件添加到节点上
+
+requireComponent  参数用来指定当前组件的依赖组件，默认值为 null。当组件添加到节点上时，如果依赖的组件不存在，引擎会自动将依赖组件添加到同一个节点，防止脚本出错。该选项在运行时同样有效。
+	@ccclass('Example')
+	@requireComponent(Sprite)
+	export class Example extends Component {
+	}
+
+
+executionOrder  设置组件优先级，越小越优先。executionOrder 只对 onLoad、onEnable、start、update 和 lateUpdate 有效，对 onDisable 和 onDestroy 无效
+	@executionOrder(-1)
+	export class Configuration extends Component {
+
+    		onLoad () {
+        		console.log('Configuration onLoad!');
+    		}
+	}
+
+
+disallowMultiple  同一节点上只允许添加一个同类型（含子类）的组件，防止逻辑发生冲突，默认值为 false
+	@ccclass('Example')
+	@disallowMultiple(true)
+	export class Example extends Component {
+	}
+
+
+@menu(path) 用来将当前组件添加到组件菜单中，方便用户查找
+	@ccclass('Example')
+	@menu('foo/bar')
+	export class Example extends Component {
+	}
+
+
+属性装饰器 property 可以被应用在 cc 类的属性或访问器上。属性装饰器用于控制 Cocos Creator 编辑器中对该属性的序列化、属性检查器 中对该属性的展示等
+	@property({
+    		type: Node,
+    		visible: true,
+	})
+	targetNode: Node | null = null;
+
+
+Group 当脚本中定义的属性过多且杂时，可通过 group 对属性进行分组、排序，方便管理。同时还支持对组内属性进行分类
+
+
+
+
+
+
+===========================. 访问节点和其他组件. ========================
+1.获得组件所在的节点很简单: let node = this.node;
+
+2.需要获得同一个节点上的其它组件，这就要用到 getComponent
+	this.label = this.getComponent(Label);
+
+3.如果在节点上找不到你要的组件，getComponent 将返回 null
+
+4.声明属性，这样在界面中就可以看到这个名称的属性
+	@ccclass("Cannon")
+	export class Cannon extends Component {
+   		 // 声明 Player 属性
+    		@property({ type: Node })
+    		private player = null;     还可以将属性的默认值由 null 改为数组 []，这样你就能在 属性检查器 中同时设置多个对象
+	}
+
+5.查找子节点
+	let cannons = this.node.children
+	this.node.getChildByName("Cannon 01");
+	如果子节点的层次较深，你还可以使用 find，find 将根据传入的路径进行逐级查找      find("Cannon 01/Barrel/SFX", this.node)
+	当 find 只传入第一个参数时，将从场景根节点开始逐级查找：this.backNode = find("Canvas/Menu/Back");
+
+
+===========================. 创建节点、销毁节点. ========================
+
+创建节点		let node =new Node('box');
+克隆节点	
+	let scene = director.getScene();     // cc.director 是一个管理游戏逻辑流的单例对象
+        let node = instantiate(this.target);
+        scene.addChild(node);
+
+创建预置节点
+	@property({type:Prefab})
+    	private target: Prefab = null;
+
+    	start(){
+        	let scene = director.getScene();
+        	let node = instantiate(this.target);
+
+        	scene.addChild(node);
+        	node.setPosition(0,0,0);
+    	}
+
+
+销毁节点：销毁节点并不会立刻被移除，而是在当前帧逻辑更新结束后，统一执行。当一个节点销毁后，该节点就处于无效状态，可以通过 isValid 判断当前节点是否已经被销毁
+	start(){
+        	// 5秒后销毁节点
+        	setTimeout(function () {
+            		this.target.destroy();
+         	 }.bind(this), 5000);
+    	}
+
+
+
+===========================. 计时器. ========================
+setTimeout 延迟一段时间后，执行一次
+setInterval 至少间隔一段时间后，循环执行。实际上两次的间隔时间不一定是设置的值，若被其它线程抢占，将延后执行
+schedule 计时器
+	this.schedule(function() {}, interval, repeat, delay)   延迟delay后执行，每interval秒执行一次，共执行repeat+1次
+
+取消计时器：
+	开发者可以使用回调函数本身来取消计时器：
+ 		this.count = 0;
+ 		this.callback = function () {
+    			 if (this.count == 5) {
+         		// 在第六次执行回调时取消这个计时器
+         			this.unschedule(this.callback);
+    			 }
+     			this.doSomething();
+     			this.count++;
+		 }
+		 this.schedule(this.callback, 1);
+
+* schedule：开始一个计时器
+* scheduleOnce：开始一个只执行一次的计时器
+* unschedule：取消一个计时器
+* unscheduleAllCallbacks：取消这个组件的所有计时器
+
+
+===========================. 组件和组件执行顺序. ========================
+const myComponent = node.addComponent(MyComponent);    添加组件
+myComponent.printNodeName(); // 正确
+node.removeComponent(myComponent);     移除组件
+
+
+
+
+===========================. 生命周期. ========================
+* onLoad
+* onEnable
+* start
+* update
+* lateUpdate
+* onDisable
+* onDestroy
+
+
+===========================. 加载和切换场景. ========================
+Director.loadScene(“dsaasd”， onSceneLaunched)      指定场景加载后的回调函数。由于回调函数只能写在本脚本中，所以场景加载回调通常用来配合常驻节点，在常驻节点上挂载的脚本中使用
+Director.runScene(“sadsadasd”)
+
+director.preloadScene("table", function () {          预加载场景，加载完后再屌用loadScene手动切换 director.loadScene("table");
+    console.log('Next scene preloaded');
+});
+
+
+===========================. 常驻节点. ========================
+
+控制所有场景的加载，或在场景间传递参数数据，可将该组件所在节点标记为常驻节点，在场景切换时就不会销毁，常驻内存。可储存玩家信息，或下一场景初始化所需的数据。常驻节点需位于根节点，否则无效。
+
+Director.addPersistRootNode(MyNode)    设置常驻节点
+director.removePersistRootNode(myNode);    取消常驻节点。并不会立即销毁指定节点，只是将节点还原为可在场景切换时销毁的节点
+
+
+===========================. 获取和加载资源. ========================
+所有继承自 Asset 的类型都统称资源，如 Texture2D、SpriteFrame、AnimationClip、Prefab 等
+
+@ccclass("test")
+export class test extends Component {
+
+    @property({type: Texture2D})
+    private texture: Texture2D = null;
+
+    @property({type: SpriteFrame})
+    private spriteFrame: SpriteFrame = null;
+}
+
+这样就能在脚本里直接拿到设置好的资源：
+start () {
+    let spriteFrame = this.spriteFrame;
+    let texture = this.texture;
+}
+
+
+
+
+===========================. 事件系统. ========================
+import { EventTarget } from 'cc';     监听和发射事件
+const eventTarget = new EventTarget();
+
+
+1. 监听事件 
+	eventTarget.on(type, func, target?)    type:事件注册字符串        target:事件接收对象,如果 target 没有设置，则回调里的 this 指向的就是当前执行回调的对象。在target对象上监听type事件，并回调func
+	除了使用 on 监听，我们还可以使用 once 接口。once 监听在监听函数响应后就会关闭监听事件
+
+	下面两种同效:
+
+	// 使用函数绑定
+	eventTarget.on('foo', function ( event ) {
+ 		 this.enabled = false;
+	}.bind(this));
+
+	// 使用第三个参数
+	eventTarget.on('foo', (event) => {
+  		this.enabled = false;
+	}, this);
+
+2. 取消监听事件
+	// 取消对象身上所有注册的该类型的事件
+	eventTarget.off(type);
+	// 取消对象身上该类型指定回调指定目标的事件
+	eventTarget.off(type, func, target);
+
+
+import { _decorator, Component, EventTarget } from 'cc';
+const { ccclass } = _decorator;
+const eventTarget = new EventTarget();
+
+@ccclass("Example")
+export class Example extends Component {
+    onEnable () {
+        eventTarget.on('foobar', this._sayHello, this);
+    }
+
+    onDisable () {
+        eventTarget.off('foobar', this._sayHello, this);
+    }
+
+    _sayHello () {
+        console.log('Hello World');
+    }
+}
+
+
+3. 事件发射
+
+@ccclass("Example")
+export class Example extends Component {
+    onLoad () {
+        eventTarget.on('foo', (arg1, arg2, arg3) => {
+            console.log(arg1, arg2, arg3);  // print 1, 2, 3
+        });
+    }
+
+    start () {
+        let arg1 = 1, arg2 = 2, arg3 = 3;
+        // At most 5 args could be emit.
+        eventTarget.emit('foo', arg1, arg2, arg3);
+    }
+}
+
+
+4. 输入事件系统
+
+上文提到的输入事件，都可以通过接口 input.on(type, callback, target) 注册。可选的 type 类型包括：
+输入事件	type 类型
+鼠标事件	Input.EventType.MOUSE_DOWN
+Input.EventType.MOUSE_MOVE
+Input.EventType.MOUSE_UP
+Input.EventType.MOUSE_WHEEL
+触摸事件	Input.EventType.TOUCH_START
+Input.EventType.TOUCH_MOVE
+Input.EventType.TOUCH_END
+Input.EventType.TOUCH_CANCEL
+键盘事件	Input.EventType.KEY_DOWN（键盘按下）
+Input.EventType.KEY_PRESSING（键盘持续按下）
+Input.EventType.KEY_UP（键盘释放）
+设备重力传感事件	Input.EventType.DEVICEMOTION
+
+
+指针事件(包括 鼠标事件 和 触摸事件)的使用范例如下：
+import { _decorator, Component, input, Input, EventTouch } from 'cc';
+const { ccclass } = _decorator;
+
+@ccclass("Example")
+export class Example extends Component {
+    onLoad () {
+        input.on(Input.EventType.TOUCH_START, this.onTouchStart, this);
+    }
+
+    onDestroy () {
+        input.off(Input.EventType.TOUCH_START, this.onTouchStart, this);
+    }
+
+    onTouchStart(event: EventTouch) {
+        console.log(event.getLocation());  // Location on screen space
+        console.log(event.getUILocation());  // Location on UI space
+    }
+}
+
+
+5. 节点事件系统
+
+node.on(Node.EventType.MOUSE_DOWN, (event) => {
+  console.log('Mouse down');
+}, this);
+
+枚举对象定义	事件触发的时机
+Node.EventType.MOUSE_DOWN	当鼠标在目标节点区域按下时触发一次。
+Node.EventType.MOUSE_ENTER	当鼠标移入目标节点区域时触发，不论是否按下。
+Node.EventType.MOUSE_MOVE	当鼠标在目标节点区域中移动时触发，不论是否按下。
+Node.EventType.MOUSE_LEAVE	当鼠标移出目标节点区域时触发，不论是否按下。
+Node.EventType.MOUSE_UP	当鼠标从按下状态松开时触发一次。
+Node.EventType.MOUSE_WHEEL	当鼠标滚轮滚动时触发。
+
+触摸事件在移动端和 PC 端都会触发，开发者若希望更好地在 PC 端进行调试，只需要监听触摸事件即可同时响应移动端的触摸事件和 PC 端的鼠标事件。系统提供的触摸事件类型如下：
+枚举对象定义	事件触发的时机
+Node.EventType.TOUCH_START	当手指触点落在目标节点区域内时。
+Node.EventType.TOUCH_MOVE	当手指在屏幕上移动时。
+Node.EventType.TOUCH_END	当手指在目标节点区域内离开屏幕时。
+Node.EventType.TOUCH_CANCEL	当手指在目标节点区域外离开屏幕时。
+
+
+
+===========================. 箭头函数. ========================
+() => {xxxxxx}    即匿名函数
+带参数的箭头函数       (x) => x * 2    ,若只有一个参数，可省略括号:      x => x*2
+
+
+
+==========================. 监听事件. =========================
+我们使用的 this.playerCtrl?.node 也就是 PlayerController 的节点来接收事件，在 Cocos Creator 中，某个节点派发的事件，只能用这个节点的引用去监听
+
+

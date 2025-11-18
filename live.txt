@@ -1,0 +1,15 @@
+pyinstaller \
+    --name "TestTools" \
+    --windowed \
+    --noconfirm \
+    --osx-bundle-identifier "com.example.TestTools" \
+    --add-data "venv/lib/python3.10/site-packages/FrontendLibrary:FrontendLibrary" \
+    --add-data "venv/lib/python3.10/site-packages/requests:requests" \
+    --add-data "venv/lib/python3.10/site-packages/ToolLibrary:ToolLibrary" \
+    --add-data "venv/lib/python3.10/site-packages/pika:pika" \
+    --add-data "qss:qss" \
+    --add-data "env.ini:env.ini" \
+    --add-data "poker:poker" \
+    --add-data "venv/lib/python3.10/site-packages/setuptools/_vendor/jaraco/text/Lorem ipsum.txt:jaraco/text" \
+    --upx-dir /usr/local/bin/upx \
+    main.py

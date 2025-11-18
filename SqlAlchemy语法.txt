@@ -1,0 +1,200 @@
+SqlAlchemy 查询语法
+
+通过with_entities() 获取要在结果中返回的列    with_entities(eval(f'AgentInfo.{key}'))
+
+正则：filter(AgentInfo.path.regexp_match(regexp_str))
+模糊匹配: filter(xx.like('%dsdsasda%')))
+in: filter(~xx.in_(1,3,5]))  ~为非，最终为不在1.3.5
+判空： filter(xx==None)) 或 filter(xx.is_(None)))
+非空： filter(xx!=None)) 或 filter(xx.isnot(None))
+或： from sqlalchemy import or_  filter(or_(a,b)))
+多表查询: query(a,b).join(b,a.id==b.id))
+between:   filter(xx.between(1,6))))
+
+# select * from users where id in (select id from users where name = xxx);
+ session.query(Users).filter(Users.id.in_(session.query(Users.id).filter_by(name='xxx'))).all()
+ 
+ 
+ # select * from users where id <2 or (name=xxx and id>3) or extra !='';
+ session.query(Users).filter(
+    or_(
+        Users.id < 2,
+        and_(Users.name == 'xxx', Users.id > 3),
+        Users.extra != ""
+    ))
+ 
+ 
+ # 分页，区间
+ session.query(Users)[1:2]  # 去第一条到第二条  其实就是只取 第二条,从0开始
+
+
+# 排序
+ret = session.query(Users).order_by(Users.name.desc()).all()
+# 第一个条件重复后，再按第二个条件升序排
+ret = session.query(Users).order_by(Users.name.desc(), Users.id.asc()).all()
+
+
+
+.select_from(table)
+filter_by() 不用传表
+
+session.scalars() 方法是 SQLAlchemy 中用于执行查询并返回标量值（Scalar）的方法。在 ORM 查询中，当你只需要获取一列数据的值而不是整个对象时，可以使用 session.scalars() 方法。 
+例如：
+stmt = select(user.id).where(...)
+for user_id in session.scalars(stmt)):
+	....
+也可以写为：
+result = session.execute(select(user.id).where(....))
+result.scalars().all()
+
+
+
+查询结果为多对象
+stmt = select(User, Address).join(User.addresses).order_by(User.id, Address.id)
+for row in session.execute(stmt):
+    print(f"{row.User.name} {row.Address.email_address}")
+
+
+# 使用Bundle对查询结果列进行分组
+from sqlalchemy.orm import Bundle
+# 使用Bundle将来自不同类的属性区分开
+stmt = select(
+    Bundle("user", User.name, User.fullname),
+    Bundle("email", Address.email_address),
+).join_from(User, Address)
+# 注意这里引用的路径也不一样了
+for row in session.execute(stmt):
+    print(f"{row.user.name} {row.user.fullname} {row.email.email_address}")
+
+
+
+
+
+
+
+# 分组
+
+func.if_()
+
+ret = session.query(
+    func.max(Users.id),
+    func.sum(Users.id),
+    func.min(Users.id),
+    func.count(Users.id),
+    Users.name
+    ).group_by(Users.name).all()
+    
+# 分组 having
+# select max(id),sum(id),min(id),count(id),name from users group by name where id >2 having min(id)>2
+session.query(
+    func.max(Users.id),
+    func.sum(Users.id),    
+    func.min(Users.id),
+    func.count(Users.id),
+    Users.name
+    ).filter(Users.id>2).group_by(Users.name).having(func.min(Users.id) >2)
+
+连表：
+	full join 
+		# select * from person,hobby where user.hobby_id=hobby.id;
+		query(Person, Hobby).filter(Person.hobby_id == Hobby.id).all()
+		
+	inner join
+		#select * from person inner join hobby on person.hobby_id=hobby.id;
+		ret = session.query(Person).join(Hobby, Person.id=Hobby.id).all()
+
+	left join, 只有左连接，需右链接则自行换顺序
+		# select * from person left join hobby on person.hobby_id=hobby.id;
+		session.query(Person).join(Hobby, isouter=True).all()
+
+	# 没有指定链表条件,默认以外键关联
+		# select * from Person left join hobby on person.id=hobby.id;
+		session.query(Person).join(Hobby,Person.id==Hobby.id, isouter=True)
+		
+		如果是对同一表关联，需要用别名：
+			from sqlalchemy.orm import sessionmaker,aliased
+			vg1 = aliased(sqlModel.VagueLabelUser)
+			vg2 = aliased(sqlModel.VagueLabelUser)
+			
+			count = dbsession.query(vg.user_id).join(vg1, vg.user_id == vg1.user_id).join(vg2, vg.user_id == vg2.user_id).filter(
+                and_(vg.vaguelabel_id == 7,
+                vg1.vaguelabel_id == 2,
+                vg2.vaguelabel_id == 3)
+           ).group_by(vg.user_id).count()
+
+
+		select b.user_id from (vaguelabeluser b inner join vaguelabeluser a on a.user_id=b.user_id) inner join vaguelabeluser c on b.user_id = c.user_id where (b.vaguelabel_id=7 ) and (a.vaguelabel_id=2) and (c.vaguelabel_id=3) group by b.user_id;
+
+		# 另一个用法，意思是用VagueLabelUser模型映射xx子查询，使查询更清晰
+		vg2 = aliased(sqlModel.VagueLabelUser, xx)
+
+
+
+
+Union:
+
+	q1 = session.query(Boy.id,Boy.name).filter(Boy.id > 1)
+	q2 = session.query(Girl.id,Girl.name).filter(Girl.id < 10)
+	ret = q1.union(q2).all()
+	ret = q1.union_all(q2).all()
+
+
+update:
+	from sqlalchemy import update
+	update(table).where(xx.is_(aaaa))).values({xx:'xx'})
+	
+	
+
+孤勇者,任意单个自然月全平台负盈利最多的一个人
+
+data = ms.query(OrderRecord.user_account, func.date_format(func.convert_tz(
+    func.from_unixtime(OrderRecord.first_settle_time / 1000), '+00:00', '-05:00'), '%Y-%m').label('date'),
+                func.sum(OrderRecord.win_loss_amount).label('value')).\
+    group_by('date', OrderRecord.user_account).\
+    subquery()
+data = ms.query(data.c.user_account, data.c.value, data.c.date,
+                func.row_number().over(partition_by=['date'], order_by=data.c.value.desc()).label('index')).\
+    subquery()
+data = ms.query(data).filter(data.c.index == 1).all()
+user_list = set([_[0] for _ in data])
+return True if user_account in user_list else False
+
+
+
+
+Mysql 语法：
+	WHERE FIND_IN_SET('electronics', tags) > 0      tags里面用逗号分割，若包含electronics则会大于0
+	
+筛选条件，某字段的值为空： UserInfo.super_agent_id.is_(None)
+
+
+
+# case
+stmt = select(
+    func.sum(
+        case(
+            [(foo.c.amount > 0, foo.c.amount)],  # 条件为 true 时返回 amount
+            else_=-foo.c.amount                 # 条件为 false 时返回 -amount
+        )
+    )
+)
+
+
+
+
+
+
+
+
+
+
+==============================   Mysql  ====================================
+SELECT date_format(from_unixtime(user_info.created_time / 1000), '%Y-%m-%d %H:%i:%s') AS date, user_info.created_time 
+FROM user_info 
+WHERE user_info.created_time BETWEEN 1722805200000 AND 1722891599999
+
+
+
+
+from sqlalchemy import literal
+literal('aaa').label()

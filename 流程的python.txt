@@ -1,0 +1,264 @@
+流畅的Python学习
+
+1.对象实现__len__，即可对实例使用len
+2.对象实现__getitem__，即可对实例使用索引访问，甚至 choice
+3.类的__slots__ 可以限制类可拥有的属性，若类被继承，不会影响子类
+4.__enter__,__exit__: 用于with上下文管理器的调用，使用with时调用__enter__，代码体结束后调用__exit__。as后的变量值就是__enter__的返回值
+
+name = property(getname, setname, delname, '指明出处') 快速的生成一个类变量，可对该变量使用”foo.name”的方式进行查询、修改、删除和打印
+
+getattr(obj, param, else_value)   更安全的获取对象属性
+
+
+在site-packages中添加xxx.pth，里面把需要的路径加进去，运行时包可实现自动搜索指定的路径
+勾子hook：定义一个函数，但函数体为空，用户可通过一个注册函数将自己定义的函数对象赋值绑定给该函数变量，系统运行时会判定该函数是否为空，若有值则运行自定义的函数，否则不运行。
+
+
+类中增加  __slots__ = ['aa', 'bb'] ,那么此类只能创建这列表中的变量名
+
+
+1. 这个装饰器，当传参相同时直接返回上一次执行的结果，而不需要再次计算。
+From functors import lru_cache
+
+@lru_cache
+Def test(a,b):
+	….
+
+
+Collections:
+	dequeue: 双向列表
+	named tuple: 限制元素个数的元祖
+	orderdDict: 有序字典
+	defaultdict: 若key不存在，则返回设置的函数执行的结果
+	Counter: 对可迭代对象进行频次统计，可使用 most_common来查看频次最高的数
+
+functools:
+	reduce: 对列表从左到右按指定的func进行计算和累加
+	partial: 偏函数
+	wraps: 可让装饰器装饰的函数更像原函数
+	singledispatch: 范型，可实现函数重载。当业务逻辑足够复杂时，可以使用事件驱动模式将业务逻辑拆解为不同的事件。在处理不同事件时，传统模式可能会使用大量的分支判断，使用functools.singledispatch可以简化事件的处理流程
+	timeout: 此作为装饰器，可以在func执行时间超过指定的值时抛异常
+
+Shelve: 本地轻量数据持久化，类似本地的db
+frozenset： 冻结的集合，不能改变
+
+
+
+from enum import Enum     继承Enum，类可变为枚举类型
+from itertools import combinations  可生成所有组合
+
+
+Python 三方库
+
+Click: 可将函数设置为命令行方式传参，设置传参的提示、交互式输入、对密码输入进行密文显示
+Filelock: 文件加锁
+Ffmpeg-python 音视频处理
+Zipfile 压缩、解压文件
+shutil： 作为OS的补充，提供了复制、移动、删除、压缩、解压等操作
+fastApi: 简易版web框架
+Python-magic: 通过校验文件头来识别文件类型
+struct: 通过压缩和解包，使python数据转为标准的数据类型格式，可直接与其他语言进行交互。使用参考airTest
+Inspect: 可获取对象的所有属性
+Stat: 可以获取文件的各种详细属性
+Pillow： 图像处理库
+markupsafe: 针对用户的输入，将原始输入的特殊字符转义，保证显示的安全。
+argparse: 添加命令行参数帮助说明，在脚本内部可解析出每个传参
+urlparse： 对url进行解析，拆分出协议类型，域名，uri和传参
+traceback: 一般用在try except里面，得到异常对象，可根据异常信息进行自定义处理，比如打印
+enum: 枚举
+concontextvars: 可支持异步方法里面变量隔离，减少传参
+dataclasses: 简化数据类创建，一般来存储数据，自动添加特殊方法，如__init__,__repr__   from data classes import dataclass, @dataclass(frozen=true) 则为不可变
+argparse: 可通过命令行传入参数，并将参数解析为字典进行使用
+pyopt: 遵循Google Authticator标准
+typing: 用于指定强制类型，避免乱传参或者不传参。里面有很多类型
+
+
+
+Decimal 截断：
+
+from decimal import Decimal, getcontext, ROUND_DOWN
+ 
+number.quantize(Decimal('0.01'), rounding=ROUND_DOWN)
+
+
+---------
+from dataclass import dataclass
+
+@dataclass
+class Person:
+	home = 'aaaa'
+	name: str
+	
+正常的话，home将作为类的共享属性，而加了dataclass后，会自动实现 __init__,__repr__,__eq__方法，home将变为实例属性。创建实例时，需提供name的值,无需给home传参
+
+
+------ singledispatch 重载 ---------
+from functools import singledispatch
+
+
+@singledispatch
+def process(*args):
+    raise NotImplementedError("Unsupported operation")
+
+
+@process.register(int)
+def _(*arg):
+    return f"Processing integer: {arg}"
+
+
+@process.register(float)
+def _(*arg):
+    return f"Processing float: {arg}"
+
+
+@process.register(float, str)
+def _(*arg):
+    return f"Processing float: {arg}"
+
+
+python3.7后可用
+@process.register
+def _(x: float) -> None:
+	print('aaaaa')
+
+
+
+
+-------------- multiprocessing 基于多进程的方式，能使用多核----------------
+在 multiprocessing 中，通过创建一个 Process 对象然后调用它的 start() 方法来生成进程。 Process 和 threading.Thread API 相同
+
+from multiprocessing import Process
+import os
+
+def info(title):
+    print(title)
+    print('module name:', __name__)
+    print('parent process:', os.getppid())
+    print('process id:', os.getpid())
+
+def f(name):
+    info('function f')
+    print('hello', name)
+
+if __name__ == '__main__':
+    info('main line')
+    p = Process(target=f, args=('bob',))
+    p.start()
+    p.join()
+    
+    
+    
+    
+===============   Pycharm 快捷键   ====================
+key promoter x: 显示未绑定快捷键的操作，帮助记忆快捷键
+rainbow brackets: 彩虹括号，提升代码可读性
+gittoolbox: 增强git集成
+tabnine: AI代码补全
+
+
+
+---- ai -------
+
+
+--- 根据描述生成代码
+
+01
+将文本光标放在编辑器中的任意位置或选择一个代码段，然后按 ⌘ \。
+02
+在输入字段中，编写您的提示，然后按 Enter。
+03
+要改进结果，请在输入字段中编写您的后续提示，然后按 Enter。
+04
+按 ⌘ ↩ Return 接受生成的代码，或按 Esc 拒绝
+
+
+--- 生成文档
+01
+选择一个代码段，然后点击右键以打开上下文菜单。
+02
+选择 AI 操作，然后选择编写文档。
+提示自定义:
+转到设置 | 工具 | AI Assistant | 提示库 | 编写文档
+
+
+--- 生成提交信息
+
+01
+打开   提交工具窗口。
+02
+点击   使用 AI Assistant 生成提交消息。
+提示自定义:
+打开提交消息字段右下角的提交设置。
+或者，转到设置 | 工具 | AI Assistant | 提示库 | 提交消息生成
+
+
+--- 解释报错
+
+如果出现运行时错误:
+
+01
+在控制台中点击   使用 AI 解释。
+02
+或者，选择错误消息，打开上下文菜单，然后点击使用 AI 解释错误消息
+
+
+
+
+---- 补全代码
+
+01
+开始在编辑器中输入以获取即时建议。
+02
+要接受建议的代码，请按 ⇥ Tab。
+03
+要拒绝建议，请按 Esc。
+您也可以通过按 ⌥ ⇧ \ 手动调用代码补全。
+提示: 将鼠标悬停在代码建议上可以更改接受 AI Assistant 建议的键
+
+
+
+
+
+--------- f'' 格式化字符串 -----------
+
+s = "hello"
+print(f"{s:>10}")   # 右对齐 -> '     hello'
+print(f"{s:<10}")   # 左对齐 -> 'hello     '
+print(f"{s:^10}")   # 居中   -> '  hello   '
+print(f"{s:.3}")    # 截断   -> 'hel'
+
+
+num = 1234.56789
+
+print(f"{num:.2f}")      # 保留两位小数 -> 1234.57
+print(f"{num:,.2f}")     # 千分位 -> 1,234.57
+print(f"{num:10.2f}")    # 宽度 10，右对齐 -> '   1234.57'
+print(f"{num:<10.2f}")   # 宽度 10，左对齐 -> '1234.57   '
+print(f"{num:^10.2f}")   # 宽度 10，居中 -> ' 1234.57  '
+print(f"{255:x}")        # 十六进制 -> ff
+print(f"{255:08b}")      # 二进制，补零 -> 11111111
+
+
+
+----------------- contextmanager : 使用 with ... as
+正常实现了 __enter__ 和 __exit__ 就可以使用with语法了
+用contextmanager可以简化
+
+from contextlib import contextmanager
+
+@contextmanager
+def foo(args):
+	print('aaa')
+	q = Query(name)
+	yield q
+	print('End')
+	
+相当于中断
+
+
+
+
+
+
+
+------------

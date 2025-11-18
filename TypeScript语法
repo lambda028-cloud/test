@@ -1,0 +1,268 @@
+注释  //  /*  */
+
+const hello : string = "Hello World!"
+var val:string|number  联合类型
+
+
+console.log(hello);
+var isPerson = obj instanceof Person  判断类型
+
+
+----------- 数据类型  ---------
+any  可接任意类型
+number 双精度 64 位浮点值
+    toFixed(5) 指定小数位
+    toString()
+    valueOf() 原始数字值
+string
+    length
+    CharAt() 指定位置的字符
+    concat()
+    indexOf()
+    lastIndexOf()
+    match()
+    replace()
+        var re = /(\w+)\s(\w+)/; 
+        var str = "zara ali"; 
+        var newstr = str.replace(re, "$2, $1");
+    search()
+        str.search(re)
+    slice() 切片
+    str.split(" ", 3)
+    substr() 从起始索引号提取字符串中指定数目的字符
+    substring() 提取字符串中两个指定的索引号之间的字符。
+    toLowerCase()
+    toString()
+
+
+boolean
+数组： 在类型后加[]
+    var array_name[:data type] = [val1,val2…valn]
+    多维数组 var arr_name:datatype[][]=[ [val1,val2,val3],[v1,v2,v3] ]
+
+    concat()   -  a.concat(b)
+    filter()   - var passed = [12, 5, 8, 130, 44].filter(isBigEnough)
+
+    var num = [7, 8, 9];
+    num.forEach(function (value) {
+        console.log(value);  // 7   8   9
+    });
+
+
+Map
+Const page_info = new Map()
+page_info.set(key, value). # 新增
+page_info.get(key). 获取键值，没有则返回undefined
+page_info.delete(key)   删除键值对，成功则返回true
+page_info.has(key)
+page_info.values()
+page_info.entries() 返回(key,value)的iterator对象
+page_info.clear()
+[...page_info]       map转list，  ...为扩展运算符
+
+
+
+元组:   let x: [string, number]    数组存的类型是相同的，元组可以存不通类型的元素
+枚举 enum:
+    enum Color {Red, Blue}
+    let c: Color = Color.Blue
+void 无返回值
+null 对象值缺失
+undefined 初始化变量为一个未定义的值
+never 是其它类型（包括 null 和 undefined）的子类型，代表从不会出现的值
+
+
+------------ 类型运算符 --------
+console.log(typeof num); //输出结果: number
+
+instanceof
+
+
+------------ let 与 var --------
+
+1) Var 可申明同名变量，let不行
+
+Var a = 0; var a= 1    
+Let a = 0; let a = 1
+
+2) var的作用域是函数作用域，在内层循环中和外层循环中使用的是同一个i，在内层的修改会波及外层。let的作用域是块级作用域，在内层循环中的i和外层循环中的i不是同一个i，在内层的修改不会波及外层。
+
+
+------------ 条件语句 ----------
+if 语句 - 只有当指定条件为 true 时，使用该语句来执行代码
+if...else 语句 - 当条件为 true 时执行代码，当条件为 false 时执行其他代码
+if...else if....else 语句- 使用该语句来选择多个代码块之一来执行
+switch 语句 - 使用该语句来选择多个代码块之一来执行
+
+for ( init; condition; increment ){
+    statement(s);
+}
+
+for(j in n) {
+    console.log(n[j])  
+}
+
+for (var item of this.keyOnlyList) {
+            for (var i of this.keyList) {
+                if (item === i) {
+                    count++
+                }
+            }
+        }
+
+this.keyList.forEach(item => {
+            if (this.keyCodeMap[item]) pairResult += this.keyCodeMap[item]
+        })
+
+
+========  function =========
+
+function greet():string { // 返回一个字符串
+    return "Hello World" 
+}
+
+
+加问号表示可选参数
+function buildName(firstName: string, lastName?: string) {
+    if (lastName)
+        return firstName + " " + lastName;
+    else
+        return firstName;
+}
+
+不定长传参
+function buildName(firstName: string, ...restOfName: string[]) {
+    return firstName + " " + restOfName.join(" ");
+}
+
+匿名函数
+var res = function(a:number,b:number) { 
+    return a*b;  
+}; 
+
+构造函数
+var myFunction = new Function("a", "b", "return a * b");
+var x = myFunction(4, 3); 
+console.log(x);
+
+箭头函数
+var foo = (x:number)=>10 + x 
+
+var func = (x)=> { 
+    if(typeof x=="number") { 
+        console.log(x+" 是一个数字") 
+    } else if(typeof x=="string") { 
+        console.log(x+" 是一个字符串") 
+    }  
+} 
+
+重载
+function disp(string):void; 
+function disp(number):void;
+
+============= const =================
+正常的使用，为常量，不可变更
+Const a = 1
+
+支持重定义
+Const a = 1
+Const a = 2 // 实际创建了一个新对象
+
+支持对子属性的修改,类似元组
+Const foo = {a: 1};
+foo.a = 2
+
+
+============= 接口 =================
+可理解为类，实例化时若与属性不一致，将报错。
+
+Interface Foo{
+	name: string;
+	age?: number; // 可选
+	readonly sex: number;  // 只读
+}
+
+函数类型接口:
+Interface Foo {
+	(name: string, age: number): boolean
+}
+
+Let manFun: Foo = (name: string, age: number) => {
+	return age > 10;
+}
+
+
+可索引类型接口： 可规定索引的类型和返回值的类型
+Interface Foo {
+	[index: number]: string
+}
+Let manArr: Foo = ['aa', 'bb']
+
+
+===========  访问控制  ===============
+public（默认） : 公有，可以在任何地方被访问。
+
+protected : 受保护，可以被其自身以及其子类访问。
+
+private : 私有，只能被其定义所在的类访问。
+
+
+
+
+=========  名词  ==============
+位置（Position）、旋转（Rotation） 和 缩放（Scale)
+
+
+缓动系统  cc.tween
+全局设置帧率 cc.setFrameRate
+文字取索引： var.substr(x,y)
+
+========= 定时器 =============
+window.setTimeout(调用函数，延时时间)
+
+时间单位：毫秒
+清除定时器：window.clearTimeout(timer)
+
+
+
+================== XHR ====================
+所有现代浏览器均支持 XMLHttpRequest 对象（IE5 和 IE6 使用 ActiveXObject）。
+
+XMLHttpRequest 用于在后台与服务器交换数据。这意味着可以在不重新加载整个网页的情况下，对网页的某部分进行更新。
+
+
+创建xmlHttpRequest对象：
+	let xhr = cc.loader.getXMLHttpRequest();
+
+============= websocket ===============
+let client = websocket({url: 'ws://0.0.0.0:5000/socket.io/?token=' + token + "&EIO=4&transport=websocket", reconnect: true, reconnectIntervalInMilliSeconds: 30000});
+
+
+============== this ====================
+嵌套类里的属性申明时的this指向上级类的实例; 嵌套类里的普通函数和表达式声明函数的函数体里的this指向此嵌套类的实例，箭头函数函数里的this指向上级类的实例。
+
+1) 对象方法调用
+这也是绝大部分 this 的使用场景，当函数作为对象的 方法调用时，this 指向该对象
+const obj = {
+  name: "yj",
+  getName() {
+    return this.name // 可以自动推导为{ name:string, getName():string}类型
+  },
+}
+obj.getName() // string类型
+
+这里有个坑就是如果对象定义时对象方法是使用箭头函数进行定义，则 this 指向的并不是对象而是全局的 window
+
+2) 普通函数调用
+即使是通过非箭头函数定义的函数，当将其赋值给变量，并直接通过变量调用时，其运行时 this 执行的并非对象本身。
+说到底，和python有差异，实例方法赋值给普通变量后，已经是不同对象了，而不是像python一样指向同一个id。
+而箭头函数不一样，创建实例时就固定绑定好了，不会再变
+const obj = {
+  name: "yj",
+  getName() {
+    return this.name
+  },
+}
+const fn1 = obj.getName
+fn1() // this指向的是window，运行时报错
+
